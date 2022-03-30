@@ -19,12 +19,12 @@ export default class MyComp extends HTMLElement {
     set message(msg) {
         this.#pMessage = msg;
 
-        //Call DOM Modifier function
-        this.#messageModify();
+        //Call DOM Updater function
+        this.#messageUpdate();
     }
 
-    //Shadow DOM Modifier functions
-    #messageModify() {
+    //Shadow DOM Updaters functions
+    #messageUpdate() {
         this.shadowRoot.getElementById('pMessage').textContent = this.#pMessage;
     }
 
