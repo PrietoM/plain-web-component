@@ -1,6 +1,6 @@
 export default class MyComp extends HTMLElement {
     //State holder variables\
-    _pMessage;
+    #pMessage;
 
     constructor() {
         super();
@@ -8,29 +8,28 @@ export default class MyComp extends HTMLElement {
         // lets create our shadow root
         const shadowRoot = this.attachShadow({mode: 'open'});
 
-        this._pMessage = 'I am a Component';
+        this.#pMessage = 'I am a Component';
     }
-    
-    get links() { return this.breadcrums; }
 
     //Getter and Setters State Modifiers
     get message() {
-        return this._pMessage;
+        return this.#pMessage;
     }
 
     set message(msg) {
-        this._pMessage = msg;
+        this.#pMessage = msg;
 
         //Call DOM Modifier function
+        this.#messageModify();
     }
 
     //Shadow DOM Modifier functions
-    messageModify() {
-        this.shadowRoot.getElementById('pMessage').textContent = this._pMessage;
+    #messageModify() {
+        this.shadowRoot.getElementById('pMessage').textContent = this.#pMessage;
     }
 
     //HTML CSS Definition
-    getTemplate() {
+    #getTemplate() {
         let style = `
         <style>
             :host {
@@ -45,25 +44,47 @@ export default class MyComp extends HTMLElement {
         let html = `
         <div>
             <slot name="light2"></slot>
-            <p id="pMessage">${this._pMessage}</p>
+            <p id="pMessage">${this.#pMessage}</p>
             <slot name="light1"></slot>
         </div>
         `;
         return style + html;
     }
 
-    render() {
-        this.shadowRoot.innerHTML = this.getTemplate();
+    #render() {
+        this.shadowRoot.innerHTML = this.#getTemplate();
+    }
+    //Factory to bubble up events
+    #sentEventUp(eventName,objData) {
+        //console.log('sending event',eventName);
+        let id = this.getAttribute('id');
+        if (id) objData['componentId'] = id;
+        
+        this.dispatchEvent(new CustomEvent(eventName,{
+            bubbles: true,
+            cancelable : false,
+            composed: true,
+            detail: objData
+        }));
+    }
+    #connectEvents() {
+        //Create event listeners for component. Make sure to use arrow functions to be able to use this appropiately
+    }
+    #disconnectEvents() {
+        //Disconnect all event listeners that were created in connectEvents()
     }
     
     connectedCallback() {
         
         // Then lets render the template
-        this.render();
+        this.#render();
+
+        this.#connectEvents();
     }
 
     disconnectedCallback() {
         console.log('Component Removed from DOM')
+        this.#disconnectEvents();
     }
 
     
@@ -77,7 +98,7 @@ export default class MyComp extends HTMLElement {
         console.log('attributeChangedCallBack');
 
         // Lets re-render after getting the new attributes
-        this.render();
+        this.#render();
     }
 
 }
